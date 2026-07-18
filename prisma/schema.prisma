@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+}
+
+
+model Document {
+
+  id               String   @id @default(cuid())
+  title            String
+  originalFileName String
+  storagePath      String
+  mimeType         String
+  size             Int
+
+  status DocumentStatus @default(UPLOADING)
+
+  uploadedById String
+  uploadedBy   User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt
+
+}
+
+enum DocumentStatus {
+  UPLOADING
+  READY
+  FAILED
+  PROCESSING
+}

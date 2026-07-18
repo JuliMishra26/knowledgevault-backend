@@ -1,19 +1,25 @@
+import { apolloServer } from './graphql';
+import { expressMiddleware } from '@as-integrations/express5';
 import express from 'express';
 import cors from 'cors';
+import { createContext } from './graphql/context';
+import documentRoutes from './modules/documents/document.route';
 
-const app = express();
+export async function createApp() {
+  await apolloServer.start();
+  const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  app.use(cors());
+  app.use(express.json());
 
-// Routes
-app.get('/health', (_, res) => {
-  res.status(200).json({
-    status: 'OK',
-    service: 'KnowledgeVault API',
-    version: '1.0.0',
-  });
-});
+  app.use(
+    '/graphql',
+    expressMiddleware(apolloServer, {
+      context: createContext,
+    })
+  );
 
-export default app;
+  app.use('/api', documentRoutes);
+
+  return app;
+}
