@@ -1,4 +1,4 @@
-import { authenticated } from '../auth/auth.middleware';
+import { authenticated } from '../auth/auth.graphql';
 import * as documentService from './document.services';
 
 export const documentResolver = {

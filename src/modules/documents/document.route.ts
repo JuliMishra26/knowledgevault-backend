@@ -1,15 +1,18 @@
 import { Router, type Request, type Response } from 'express';
-import { authenticated } from '../auth/auth.middleware';
+
 import { upload } from './document.middleware';
 import * as documentService from './document.services';
+import { authenticate } from '../auth/auth.middleware';
+import * as documentProcessor from './document.processor';
 
 const router = Router();
 
 router.post(
   '/documents',
-  authenticated,
+  authenticate,
   upload.single('file'),
   async (req: Request, res: Response) => {
+    console.log('called upalod');
     try {
       if (!req.file) {
         return res.status(400).json({
@@ -23,6 +26,8 @@ router.post(
         userId: req.user!.id,
       });
 
+      void documentProcessor.process(document.id);
+
       return res.status(201).json(document);
     } catch (error) {
       return res.status(500).json({
@@ -31,6 +36,5 @@ router.post(
     }
   }
 );
-router.get('/documents', () => {});
 
 export default router;

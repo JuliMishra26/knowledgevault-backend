@@ -41,8 +41,8 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
-   "include": ["src/**/*"],                       /* Only compile files inside the src folder */
-  "exclude": ["node_modules", "dist"]  
+  "include": ["src/**/*"] /* Only compile files inside the src folder */,
+  "exclude": ["node_modules", "dist"]
 }

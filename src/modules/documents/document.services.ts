@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import type { UploadDocumentInput } from './document.types';
+import type { TextChunk, UploadDocumentInput } from './document.types';
+import type { DocumentStatus } from '@/generated/prisma/enums';
 
 export async function getDocuments() {
   return await prisma.document.findMany({
@@ -46,4 +47,36 @@ export async function uploadDocument(input: UploadDocumentInput) {
       status: 'PROCESSING',
     },
   });
+}
+
+export async function saveChunks(documentId: string, chunks: TextChunk[]) {
+  await prisma.documentChunk.createMany({
+    data: chunks.map((chunk) => ({
+      documentId,
+      chunkIndex: chunk.index,
+      content: chunk.content,
+    })),
+  });
+}
+
+export async function updateDocumentStatus(
+  documentID: string,
+  status: DocumentStatus
+) {
+  await prisma.document.update({
+    data: {
+      status,
+    },
+    where: {
+      id: documentID,
+    },
+  });
+}
+
+export async function saveEmbeddings(documentId: string, embeddings: string) {
+  await prisma.$executeRaw`
+    UPDATE "DocumentChunk"
+    SET embedding = ${embeddings}::vector
+    WHERE "documentId" = ${documentId}
+  `;
 }

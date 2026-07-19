@@ -13,7 +13,7 @@ export async function createApp() {
   app.use(express.json());
 
   app.use(
-    '/graphql',
+    '/api/graphql',
     expressMiddleware(apolloServer, {
       context: createContext,
     })

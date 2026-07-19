@@ -1,17 +1,35 @@
-import type { GraphQLContext } from '@/graphql/context';
+import type { NextFunction, Request, Response } from 'express';
 
-export function authenticated<TArgs = unknown, TResult = unknown>(
-  resolver: (
-    parent: unknown,
-    args: TArgs,
-    context: GraphQLContext
-  ) => TResult | Promise<TResult>
+import { getAuthenticatedUser, getBearerToken } from './auth.utils';
+
+export async function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) {
-  return (parent: unknown, args: TArgs, context: GraphQLContext) => {
-    if (!context.user) {
-      throw new Error('Unauthorized');
+  const token = getBearerToken(req);
+
+  if (!token) {
+    return res.status(401).json({
+      message: 'Unauthorized',
+    });
+  }
+
+  try {
+    const user = await getAuthenticatedUser(token);
+
+    if (!user) {
+      return res.status(401).json({
+        message: 'Unauthorized',
+      });
     }
 
-    return resolver(parent, args, context);
-  };
+    req.user = user;
+
+    next();
+  } catch {
+    return res.status(401).json({
+      message: 'Invalid token',
+    });
+  }
 }

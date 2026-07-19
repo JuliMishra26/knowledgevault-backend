@@ -1,7 +1,7 @@
 import type { GraphQLContext } from '@/graphql/context';
 import * as authService from './auth.services';
 import type { LoginInput, RegisterInput } from './auth.types';
-import { authenticated } from './auth.middleware';
+import { authenticated } from './auth.graphql';
 
 export const authResolver = {
   Query: {

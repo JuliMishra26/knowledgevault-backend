@@ -1,8 +1,9 @@
 import type { Request } from 'express';
 
-import { prisma } from '@/lib/prisma';
-import { getBearerToken } from '@/modules/auth/auth.utils';
-import { verifyToken } from '@/modules/auth/jwt';
+import {
+  getAuthenticatedUser,
+  getBearerToken,
+} from '@/modules/auth/auth.utils';
 
 export interface GraphQLContext {
   user: {
@@ -26,18 +27,7 @@ export async function createContext({
   }
 
   try {
-    const payload = verifyToken(token);
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: payload.id,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-    });
+    const user = await getAuthenticatedUser(token);
 
     if (!user) {
       return {

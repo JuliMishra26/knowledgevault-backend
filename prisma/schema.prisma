@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model User {
@@ -18,24 +20,22 @@ model User {
   documents Document[]
 }
 
-
 model Document {
-
-  id               String   @id @default(cuid())
+  id               String @id @default(cuid())
   title            String
   originalFileName String
   storagePath      String
   mimeType         String
   size             Int
 
-  status DocumentStatus @default(UPLOADING)
+  status DocumentStatus  @default(UPLOADING)
+  chunk  DocumentChunk[]
 
   uploadedById String
-  uploadedBy   User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @updatedAt
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
 
 enum DocumentStatus {
@@ -43,4 +43,20 @@ enum DocumentStatus {
   READY
   FAILED
   PROCESSING
+}
+
+model DocumentChunk {
+  id String @id @default(cuid())
+
+  documentId String
+  chunkIndex Int
+  content    String
+
+  embedding Unsupported("vector(768)")?
+  document  Document                    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([documentId, chunkIndex])
 }
